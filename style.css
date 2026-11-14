@@ -1,8 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;700&display=swap');
+
 html, body {
   margin: 0;
   padding: 0;
+  font-family: 'Instrument Sans', sans-serif;
+  background-color: white;
+  color: #202020;
 }
 
-canvas {
-  display: block;
+/* barra in alto */
+header {
+  display: flex;     /*dispone le scritte orizzontalmente*/
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #202020;
+  margin: 4px;
+  padding: 20px 40px;
+}
+
+/* titolo progetto (è una class) -> il lavoro fantasma */
+.nome-progetto {
+  font-size: 15px;
+  font-weight: 500; /*medium*/
+}
+
+/* menu a destra */
+nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  white-space: nowrap; /*impedisce che vada a capo*/
+}
+
+/*collegamenti <a> contenuti nel menu*/
+nav a {
+  color: #202020;
+  text-decoration: none;
+  font-weight: 400;  /*regular*/
+}
+
+/*pagina in cui si trova l'utente il titolo diventa grassetto*/
+nav a.attiva {
+  font-weight: 700;  /*bold*/
+}
+
+/*hover si sottolinea*/
+nav a:hover {
+  text-decoration: underline;
 }
