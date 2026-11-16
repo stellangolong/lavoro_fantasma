@@ -46,7 +46,7 @@ async function setup(){
    //larghezza totale dsponibile
    larghezzaTotale = width - margine * 2 - gap * 2 - spazioEta;
     
-    data = await loadTable("assets/databaseCompleto.csv", ",", "header");
+    data = await loadTable("assets/databaseEtaGenere.csv", ",", "header");
     
     //altezza rettangoli superiori
      altezza = height * 0.35;
