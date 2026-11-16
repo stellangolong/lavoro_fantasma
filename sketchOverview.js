@@ -1,5 +1,4 @@
 
-
 let coloriEta = [
   "#52B5D5",
   "#8383F7",
@@ -10,32 +9,23 @@ let coloriEta = [
   "#54B8A0"
 ];
 
+// variabili principali
 let database;
 let bottoneOrdina;
 let bottoneDettaglio;
 let ordinaAttivo = false;
 let palliniCasuali = [];
-let sliderGenere;
-let genereSelezionato = 1;
-let ultimoGenere = 1;
 
 
+// inizializzare il progetto e caricare il database
 async function setup() {
   createCanvas(windowWidth, windowHeight);
   noStroke();
 
-  // creare lo slider per selezionare il genere
-  sliderGenere = createSlider(0, 2, 1, 1);
-  sliderGenere.position(40, windowHeight - 75);
-  sliderGenere.size(270);
-  sliderGenere.style("accent-color", "#47403C");
-
   // caricare il database
   database = await loadTable("assets/databaseEtaGenere.csv", ",", "header");
 
-  genereSelezionato = sliderGenere.value();
-  ultimoGenere = genereSelezionato;
-
+  // generare le disposizioni casuali
   generaPalliniCasuali();
 
 
@@ -87,41 +77,67 @@ async function setup() {
 }
 
 
+// disegnare la pagina
 function draw() {
   background("#FFFDF5");
 
-  // leggere la posizione dello slider
-  genereSelezionato = sliderGenere.value();
-
-  // rigenerare la disposizione casuale quando cambia il genere
-  if (genereSelezionato != ultimoGenere) {
-    ultimoGenere = genereSelezionato;
-    generaPalliniCasuali();
-  }
-
-  // individuare la prima riga del genere selezionato
-  let rigaIniziale = 0;
-
-  if (genereSelezionato == 0) {
-    rigaIniziale = 8;
-  }
-
-  if (genereSelezionato == 2) {
-    rigaIniziale = 16;
-  }
-
-
+  // calcolare le distanze tra i pallini
   let distanzaX = width / 8;
-  let distanzaPallini = 15;
+  let distanzaPallini = min(12, distanzaX / 5);
+  let diametroPallini = min(9, distanzaPallini * 0.7);
+  let spazioVerticale = max(5, min(12, (height / 2 - 195) / 20));
+
+
+  // disegnare il titolo DONNE
+  textAlign(CENTER);
+  textSize(16);
+  fill("#47403C");
+
+  text("DONNE", width / 2, 25);
+
+
+  // disegnare i dati delle donne
+  disegnaGenere(8, 0, 45, distanzaX, distanzaPallini,
+    diametroPallini, spazioVerticale);
+
+
+  // linea di divisione tra le due parti
+  stroke("#E9DCCA");
+  strokeWeight(1);
+  line(30, height / 2, width - 30, height / 2);
+  noStroke();
+
+
+  // disegnare il titolo UOMINI
+  textAlign(CENTER);
+  textSize(16);
+  fill("#47403C");
+
+  text("UOMINI", width / 2, height / 2 + 25);
+
+
+  // disegnare i dati degli uomini
+  disegnaGenere(16, 1, height / 2 + 45, distanzaX,
+    distanzaPallini, diametroPallini, spazioVerticale);
+
+}
+
+
+// leggere e disegnare i dati di un genere
+function disegnaGenere(rigaIniziale, indiceGenere, yIniziale,
+  distanzaX, distanzaPallini, diametroPallini, spazioVerticale) {
 
   let percentualiEta = [];
 
+
   // leggere le percentuali dal database
   for (let i = 0; i < 7; i++) {
+
     percentualiEta[i] = database.getNum(
       rigaIniziale + i,
       "tavola_2_persone_che_hanno_fornito_almeno_1_aiuto"
     );
+
   }
 
 
@@ -132,9 +148,11 @@ function draw() {
 
       for (let k = 0; k < 5; k++) {
 
+        // calcolare la posizione del pallino nell'array
         let posizione = (19 - j) * 5 + k;
 
-        // colorare gli elementi in base alla modalità scelta
+
+        // colorare i pallini in base alla modalità scelta
         if (ordinaAttivo) {
 
           if (posizione < percentualiEta[i]) {
@@ -145,7 +163,7 @@ function draw() {
 
         } else {
 
-          if (palliniCasuali[i][posizione] == true) {
+          if (palliniCasuali[indiceGenere][i][posizione] == true) {
             fill(coloriEta[i]);
           } else {
             fill("#E9DCCA");
@@ -153,36 +171,24 @@ function draw() {
 
         }
 
+
         noStroke();
 
         let x = distanzaX * (i + 1) + k * distanzaPallini;
-        let y = 80 + j * distanzaPallini;
+        let y = yIniziale + j * spazioVerticale;
 
-        // cambiare la forma in base al genere selezionato
-        if (genereSelezionato == 0) {
-          push();
-          translate(x, y);
-          rotate(PI / 4);
-          rectMode(CENTER);
-          rect(0, 0, 9, 9, 2);
-          pop();
-
-        } else if (genereSelezionato == 1) {
-          circle(x, y, 9);
-
-        } else if (genereSelezionato == 2) {
-          rectMode(CENTER);
-          rect(x, y, 9, 9, 2);
-        }
+        circle(x, y, diametroPallini);
 
       }
+
     }
+
   }
 
 
   // scrivere le fasce d'età e le percentuali
   textAlign(CENTER);
-  textSize(14);
+  textSize(12);
   fill("#47403C");
 
   for (let i = 0; i < 7; i++) {
@@ -193,110 +199,53 @@ function draw() {
     );
 
     let x = distanzaX * (i + 1) + 2 * distanzaPallini;
+    let y = yIniziale + 20 * spazioVerticale + 16;
 
-    text(fasciaEta, x, 400);
-    text(percentualiEta[i] + "%", x, 422);
+    text(fasciaEta, x, y);
+    text(percentualiEta[i] + "%", x, y + 17);
+
   }
-
-
-  // disegnare gli indicatori del genere
-  disegnaSelettoreGenere();
 
 }
 
 
-// generare una disposizione casuale degli elementi per ogni colonna
+// generare una disposizione casuale dei pallini
 function generaPalliniCasuali() {
 
-  let rigaIniziale = 0;
+  let righeIniziali = [8, 16];
 
-  if (genereSelezionato == 0) {
-    rigaIniziale = 8;
-  }
+  for (let g = 0; g < 2; g++) {
 
-  if (genereSelezionato == 2) {
-    rigaIniziale = 16;
-  }
+    palliniCasuali[g] = [];
 
-  for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 7; i++) {
 
-    palliniCasuali[i] = [];
+      palliniCasuali[g][i] = [];
 
-    for (let j = 0; j < 100; j++) {
-      palliniCasuali[i][j] = false;
-    }
-
-    for (let j = 0; j < ceil(database.getNum(
-      rigaIniziale + i,
-      "tavola_2_persone_che_hanno_fornito_almeno_1_aiuto"
-    )); j++) {
-
-      let posizione = ceil(random(0, 99));
-
-      while (palliniCasuali[i][posizione] == true) {
-        posizione = ceil(random(0, 99));
+      // inizializzare cento posizioni non colorate
+      for (let j = 0; j < 100; j++) {
+        palliniCasuali[g][i][j] = false;
       }
 
-      palliniCasuali[i][posizione] = true;
+      // scegliere casualmente quanti pallini colorare in base alla percentuale
+      for (let j = 0; j < ceil(database.getNum(
+        righeIniziali[g] + i,
+        "tavola_2_persone_che_hanno_fornito_almeno_1_aiuto"
+      )); j++) {
+
+        let posizione = ceil(random(0, 99));
+
+        // se la posizione è già occupata, sceglierne un'altra
+        while (palliniCasuali[g][i][posizione] == true) {
+          posizione = ceil(random(0, 99));
+        }
+
+        palliniCasuali[g][i][posizione] = true;
+
+      }
+
     }
+
   }
-
-}
-
-
-// disegnare il selettore del genere
-function disegnaSelettoreGenere() {
-
-  let y = height - 100;
-
-  let coloreNeutro = "#E9DCCA";
-  let coloreAttivo = "#47403C";
-
-
-  // rombo per le donne
-  push();
-  translate(45, y);
-  rotate(PI / 4);
-
-  if (genereSelezionato == 0) {
-    fill(coloreAttivo);
-  } else {
-    fill(coloreNeutro);
-  }
-
-  rectMode(CENTER);
-  rect(0, 0, 18, 18, 4);
-  pop();
-
-
-  // cerchio per entrambi
-  if (genereSelezionato == 1) {
-    fill(coloreAttivo);
-  } else {
-    fill(coloreNeutro);
-  }
-
-  circle(175, y, 18);
-
-
-  // quadrato per gli uomini
-  if (genereSelezionato == 2) {
-    fill(coloreAttivo);
-  } else {
-    fill(coloreNeutro);
-  }
-
-  rectMode(CENTER);
-  rect(305, y, 18, 18, 4);
-
-
-  // etichette del selettore
-  fill("#47403C");
-  textAlign(CENTER);
-  textSize(12);
-
-  text("DONNE", 45, y + 25);
-  text("ENTRAMBI", 175, y + 25);
-  text("UOMINI", 305, y + 25);
 
 }
